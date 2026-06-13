@@ -4,6 +4,7 @@ import http from "http";
 import { Server } from "socket.io";
 import { connect } from "./config.js"
 import { chatModel } from "./chat.schema.js";
+import { timeStamp } from "console";
 
 
 const app=express();
@@ -27,6 +28,13 @@ io.on('connection',(socket)=>{
 
     socket.on("join",(data)=>{
         socket.username=data;
+        //send old messages to the client 
+        chatModel.find().sort({timeStamp:1}).limit(50)
+                .then(messages=>{
+                    socket.emit('load_messages',messages);
+                }).catch(err=>{
+                    console.log(err);
+                })
     })
 
     socket.on('new_message',(message)=>{
